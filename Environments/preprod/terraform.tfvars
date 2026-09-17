@@ -11,7 +11,7 @@ storage_accounts = {
     name                     = "sapreprod"
     resource_group_name      = "Storage_Azadi"
     location                 = "Central India"
-    account_tier              = "Standard"
+    account_tier             = "Standard"
     account_replication_type = "LRS"
 
   }
