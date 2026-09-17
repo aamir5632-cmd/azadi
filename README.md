@@ -250,7 +250,7 @@ storage_accounts = {
 > - Must be **3–24 characters** long.
 > - Must contain **only lowercase letters and numbers** (no dashes `-`, underscores `_`, or capital letters).
 > - Must be **globally unique** across all of Azure.
-> - ✅ *Correct*: `sapreprod`, `saprod` | ❌ *Invalid*: `SA-preprod`, `SA-pod`
+> - ✅ *Correct*: `sapreprod`, `saprod`
 
 > [!NOTE]
 > ### 3. 📂 Module Path Matching
