@@ -3,6 +3,10 @@ rgs = {
     name     = "Azadi-preprod"
     location = "Central India"
   }
+  rg2 = {
+    name     = "apreprod"
+    location = "Central India"
+  }
 }
 
 storage_accounts = {
