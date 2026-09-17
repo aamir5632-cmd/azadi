@@ -7,7 +7,7 @@ rgs = {
 
 storage_accounts = {
     sa1 = {
-        name = "SA-pod"
+        name = "saprod"
         resource_group_name = "Storage_Azadi"
         location = "Central India"
         accoun_tier = "Standard"

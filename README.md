@@ -34,7 +34,7 @@ A modular, production-ready **Infrastructure-as-Code (IaC)** project powered by 
 
 The **Azadi** repository is built adhering to cloud engineering best practices:
 
-- 🧩 **Reusable Custom Modules**: Modular blocks in `modues/` simplify resource definitions using Terraform's dynamic `for_each` map syntax.
+- 🧩 **Reusable Custom Modules**: Modular blocks in `modules/` simplify resource definitions using Terraform's dynamic `for_each` map syntax.
 - 🛡️ **Environment Isolation**: Dedicated state boundaries and variable definitions for `preprod` and `prod`.
 - 🔗 **Dependency Orchestration**: Built-in `depends_on` relationships ensure parent resources (Resource Groups) are provisioned before child resources (Storage Accounts).
 
@@ -49,13 +49,15 @@ azadi/
 ├── 🌐 Environments/                   # 🏢 Environment-specific configurations
 │   ├── 🧪 preprod/                    # 🧪 Pre-Production environment
 │   │   ├── 📄 main.tf                 # 🔌 Module invocations & dependency wiring
+│   │   ├── 📄 provider.tf             # 🔌 Azure provider configuration
 │   │   ├── 📄 terraform.tfvars        # 📝 Pre-prod input values
 │   │   └── 📄 variable.tf             # 🏷️ Pre-prod variable declarations
 │   └── 🏭 prod/                       # 🏭 Production environment
 │       ├── 📄 main.tf                 # 🔌 Module invocations & dependency wiring
+│       ├── 📄 provider.tf             # 🔌 Azure provider configuration
 │       ├── 📄 terraform.tfvars        # 📝 Production input values
 │       └── 📄 variable.tf             # 🏷️ Production variable declarations
-└── 📦 modues/                         # 🛠️ Reusable Terraform modules
+└── 📦 modules/                        # 🛠️ Reusable Terraform modules
     ├── 📁 azurerm_resource_group/     # 🗂️ Azure Resource Group module
     │   ├── 📄 main.tf                 # ⚙️ Resource definition with for_each
     │   └── 📄 variable.tf             # 📥 Input variables
@@ -69,17 +71,17 @@ azadi/
 ## 🏗️ Architecture & Modules
 
 ### 📦 1. `azurerm_resource_group`
-- **Path**: `modues/azurerm_resource_group/` 📁
+- **Path**: `modules/azurerm_resource_group/` 📁
 - **Purpose**: Dynamically provisions one or more Azure Resource Groups using map iterations.
 - **Inputs**:
   - `resource_groups` 🗺️: A map of resource group objects (`name`, `location`).
 
 ### 💾 2. `azurerm_storage_account`
-- **Path**: `modues/azurerm_storage_account/` 📁
+- **Path**: `modules/azurerm_storage_account/` 📁
 - **Purpose**: Deploys scalable Azure Storage Accounts associated with resource groups.
 - **Inputs**:
   - `storage_accounts` 🗺️: A map of storage configurations:
-    - `name` 🏷️: Unique storage account identifier.
+    - `name` 🏷️: Unique storage account identifier (lowercase alphanumeric, 3–24 chars).
     - `resource_group_name` 🗂️: Name of parent Resource Group.
     - `location` 📍: Azure datacenter region (e.g., `Central India`).
     - `account_tier` ⚡: Performance tier (`Standard` / `Premium`).
@@ -210,8 +212,8 @@ rgs = {
 # 💾 Storage Accounts Map
 storage_accounts = {
   sa1 = {
-    name                     = "azadipreprodsa01"
-    resource_group_name      = "Azadi-preprod"
+    name                     = "sapreprod"
+    resource_group_name      = "Storage_Azadi"
     location                 = "Central India"
     account_tier             = "Standard"
     account_replication_type = "LRS"
@@ -224,14 +226,15 @@ storage_accounts = {
 ## 💡 Pro-Tips & Troubleshooting
 
 > [!TIP]
-> ### 1. 🔌 Add Azure Provider Block
-> Terraform requires an `azurerm` provider block to communicate with Azure. Add a `provider.tf` file to your environment folders:
+> ### 1. 🔌 Azure Provider Configuration
+> Both environments use the official `azurerm` provider in `provider.tf`:
 > ```hcl
 > terraform {
+>   required_version = ">= 1.0.0"
 >   required_providers {
 >     azurerm = {
 >       source  = "hashicorp/azurerm"
->       version = "~> 3.0"
+>       version = "5.5.0"
 >     }
 >   }
 > }
@@ -245,20 +248,27 @@ storage_accounts = {
 > ### 2. 🔤 Storage Account Naming Constraints
 > Azure enforces strict storage account naming rules:
 > - Must be **3–24 characters** long.
-> - Must contain **only lowercase letters and numbers** (no dashes `-` or capital letters).
+> - Must contain **only lowercase letters and numbers** (no dashes `-`, underscores `_`, or capital letters).
 > - Must be **globally unique** across all of Azure.
-> - ✅ *Good*: `azadipreprodsa01` | ❌ *Invalid*: `SA-preprod`
+> - ✅ *Correct*: `sapreprod`, `saprod` | ❌ *Invalid*: `SA-preprod`, `SA-pod`
 
 > [!NOTE]
 > ### 3. 📂 Module Path Matching
-> Check module source paths in `Environments/*/main.tf` to ensure exact folder name matching:
+> Make sure module source paths in `Environments/*/main.tf` reference the `modules` directory:
 > ```hcl
 > module "resource_groups" {
->   source          = "../../modues/azurerm_resource_group"
+>   source          = "../../modules/azurerm_resource_group"
 >   resource_groups = var.rgs
+> }
+> 
+> module "storage_accounts" {
+>   source           = "../../modules/azurerm_storage_account"
+>   storage_accounts = var.storage_accounts
+>   depends_on       = [module.resource_groups]
 > }
 > ```
 
 > [!IMPORTANT]
 > ### 4. 🏷️ Variable Key Spelling
-> In `terraform.tfvars`, make sure the key name is `account_tier` (instead of `accoun_tier`) to align with the module's input mapping.
+> In `terraform.tfvars`, ensure attribute keys match the module definitions:
+> - Use `account_tier` (not `accoun_tier`).

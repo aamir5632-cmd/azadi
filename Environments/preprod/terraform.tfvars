@@ -8,7 +8,7 @@ rgs = {
 storage_accounts = {
   sa1 = {
 
-    name                     = "sapreprod"
+    name                     = "saapreprod"
     resource_group_name      = "Storage_Azadi"
     location                 = "Central India"
     account_tier             = "Standard"

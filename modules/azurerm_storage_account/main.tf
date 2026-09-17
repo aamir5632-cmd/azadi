@@ -5,7 +5,4 @@ resource "azurerm_storage_account" "sa" {
     location = each.value.location
     account_tier = each.value.account_tier
     account_replication_type = each.value.account_replication_type
-
-
-  
 }
