@@ -1,0 +1,59 @@
+name: Terraform
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: Environments/preprod
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: Environments/preprod
+        run: terraform plan
+
+
+  terraform-apply:
+    name: Terraform Apply
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: Environments/preprod
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: Environments/preprod
+        run: terraform apply -auto-approve
+
